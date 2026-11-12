@@ -1,0 +1,6 @@
+@BBG.RegistrationService.Api_HostAddress = http://localhost:5272
+
+GET {{BBG.RegistrationService.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

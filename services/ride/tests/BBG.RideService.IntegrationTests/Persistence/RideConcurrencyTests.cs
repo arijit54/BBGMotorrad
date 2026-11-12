@@ -181,4 +181,57 @@ public sealed class RideConcurrencyTests
 
         return ride;
     }
+
+    [Fact]
+    public async Task TryReleaseCapacityAsync_WhenRequestsCompeteForLastReservation_ShouldAllowOnlyOne()
+{
+    var databasePath = CreateDatabasePath();
+
+    try
+    {
+        var options = CreateOptions(databasePath);
+        Guid rideId;
+
+        await using (var setupContext = new RideDbContext(options))
+        {
+            await setupContext.Database.EnsureCreatedAsync();
+
+            var ride = CreatePublishedRide(1);
+            ride.ReserveCapacity();
+
+            rideId = ride.Id;
+
+            await setupContext.Rides.AddAsync(ride);
+            await setupContext.SaveChangesAsync();
+        }
+
+        const int requestCount = 10;
+
+        var tasks = Enumerable.Range(0, requestCount)
+            .Select(async _ =>
+            {
+                await using var context = new RideDbContext(options);
+                var repository = new RideRepository(context);
+
+                return await repository.TryReleaseCapacityAsync(rideId);
+            });
+
+        var results = await Task.WhenAll(tasks);
+
+        Assert.Equal(1, results.Count(result => result));
+        Assert.Equal(requestCount - 1, results.Count(result => !result));
+
+        await using var verifyContext = new RideDbContext(options);
+
+        var persistedRide = await verifyContext.Rides
+            .SingleAsync(ride => ride.Id == rideId);
+
+        Assert.Equal(0, persistedRide.ActiveReservations);
+        Assert.Equal(1, persistedRide.AvailableCapacity);
+    }
+    finally
+    {
+        DeleteDatabase(databasePath);
+    }
+}
 }

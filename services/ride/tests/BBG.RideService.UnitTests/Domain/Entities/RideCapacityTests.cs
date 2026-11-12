@@ -96,4 +96,35 @@ public class RideCapacityTests
         Assert.Equal(25, ride.ActiveReservations);
         Assert.Equal(0, ride.AvailableCapacity);
     }
+
+    [Fact]
+    public void UpdateDetails_WithInvalidCapacity_ShouldNotModifyRide()
+    {
+        var ride = CreatePublishedRide();
+    
+        var originalTitle = ride.Title;
+        var originalDescription = ride.Description;
+        var originalDestination = ride.Destination;
+        var originalMaximumCapacity = ride.MaximumCapacity;
+    
+        Assert.Throws<InvalidRideDataException>(() =>
+            ride.UpdateDetails(
+                "Updated Title",
+                "Updated Description",
+                RideType.DayRide,
+                RideLocation.Create("Delhi", "Delhi"),
+                RideLocation.Create("Manali", "Himachal Pradesh"),
+                RideSchedule.Create(
+                    CurrentTime.AddDays(20),
+                    CurrentTime.AddDays(22)),
+                0,
+                RideCapacityPolicy.CloseAtCapacity));
+    
+        Assert.Equal(originalTitle, ride.Title);
+        Assert.Equal(originalDescription, ride.Description);
+        Assert.Equal(RideType.MultiDayRide, ride.Type);
+        Assert.Equal("Simlipal", ride.Destination.Name);
+        Assert.Equal(originalDestination, ride.Destination);
+        Assert.Equal(originalMaximumCapacity, ride.MaximumCapacity);
+    }
 }

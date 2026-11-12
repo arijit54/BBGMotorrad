@@ -90,4 +90,29 @@ public class RideCapacityTests
         Assert.Throws<InvalidRideDataException>(
             () => capacity.ChangeMaximumCapacity(0));
     }
+
+    [Fact]
+public void Create_WithNegativeCapacity_ShouldThrowException()
+{
+    Assert.Throws<InvalidRideDataException>(
+        () => RideCapacity.Create(-1));
+}
+
+[Fact]
+public void ChangeMaximumCapacity_WhenIncreased_ShouldPreserveReservations()
+{
+    var capacity = RideCapacity.Create(20);
+
+    for (var i = 0; i < 10; i++)
+    {
+        capacity = capacity.Reserve();
+    }
+
+    var updatedCapacity = capacity.ChangeMaximumCapacity(30);
+
+    Assert.Equal(30, updatedCapacity.MaximumCapacity);
+    Assert.Equal(10, updatedCapacity.ActiveReservations);
+    Assert.Equal(20, updatedCapacity.AvailableCapacity);
+    Assert.False(updatedCapacity.IsAtCapacity);
+}
 }

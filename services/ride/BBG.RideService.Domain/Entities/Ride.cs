@@ -156,24 +156,25 @@ public sealed class Ride
             throw new InvalidRideOperationException(
                 "Only draft or published rides can be edited.");
         }
-    
+
         ValidateText(title, nameof(title), "Ride title is required.");
         ValidateText(description, nameof(description), "Ride description is required.");
-    
+
         if (!Enum.IsDefined(type))
         {
             throw new InvalidRideDataException("Invalid ride type.");
         }
-    
+
         if (!Enum.IsDefined(capacityPolicy))
         {
             throw new InvalidRideDataException("Invalid ride capacity policy.");
         }
-    
+
         ArgumentNullException.ThrowIfNull(startLocation);
         ArgumentNullException.ThrowIfNull(destination);
         ArgumentNullException.ThrowIfNull(schedule);
-    
+
+        var updatedCapacity = Capacity.ChangeMaximumCapacity(maximumCapacity);
         Title = title.Trim();
         Description = description.Trim();
         Type = type;
@@ -181,8 +182,8 @@ public sealed class Ride
         Destination = destination;
         Schedule = schedule;
         CapacityPolicy = capacityPolicy;
-    
-        Capacity = Capacity.ChangeMaximumCapacity(maximumCapacity);
+
+        Capacity = updatedCapacity;
     }
     public void ReserveCapacity()
     {
