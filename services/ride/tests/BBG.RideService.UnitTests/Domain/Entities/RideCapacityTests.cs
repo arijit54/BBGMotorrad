@@ -83,11 +83,14 @@ public class RideCapacityTests
         }
 
         ride.UpdateDetails(
-            ride.Title,
-            ride.Description,
-            ride.Schedule,
-            ride.Destination,
-            20);
+    ride.Title,
+    ride.Description,
+    ride.Type,
+    ride.StartLocation,
+    ride.Destination,
+    ride.Schedule,
+    20,
+    ride.CapacityPolicy);
 
         Assert.Equal(20, ride.MaximumCapacity);
         Assert.Equal(25, ride.ActiveReservations);

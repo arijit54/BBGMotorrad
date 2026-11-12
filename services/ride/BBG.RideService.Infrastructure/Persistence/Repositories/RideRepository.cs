@@ -3,6 +3,7 @@ using BBG.RideService.Application.Abstractions.Persistence;
 using BBG.RideService.Domain.Entities;
 using BBG.RideService.Domain.Enums;
 using BBG.RideService.Infrastructure.Persistence;
+using BBG.RideService.Application.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace BBG.RideService.Infrastructure.Persistence.Repositories;
@@ -30,24 +31,31 @@ public sealed class RideRepository(RideDbContext dbContext)
     }
 
     public async Task UpdateAsync(
-    Ride ride,
-    CancellationToken cancellationToken = default)
+        Ride ride,
+        CancellationToken cancellationToken = default)
     {
         var entry = dbContext.Entry(ride);
-
+    
         if (entry.State == EntityState.Detached)
         {
             throw new InvalidOperationException(
                 "Ride must be loaded by the current DbContext before updating.");
         }
-
+    
         var version = entry.Property<long>("Version");
-
         version.CurrentValue = version.OriginalValue + 1;
-
-        await dbContext.SaveChangesAsync(cancellationToken);
+    
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new PersistenceConcurrencyException(
+                "The ride was modified by another operation. Please reload and try again.",
+                exception);
+        }
     }
-
     public async Task<bool> TryReserveCapacityAsync(
         Guid rideId,
         CancellationToken cancellationToken = default)

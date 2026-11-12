@@ -142,32 +142,48 @@ public sealed class Ride
     }
 
     public void UpdateDetails(
-        string title,
-        string description,
-        RideSchedule schedule,
-        RideLocation destination,
-        int maximumCapacity)
+    string title,
+    string description,
+    RideType type,
+    RideLocation startLocation,
+    RideLocation destination,
+    RideSchedule schedule,
+    int maximumCapacity,
+    RideCapacityPolicy capacityPolicy)
     {
-        if (Status is RideStatus.Completed or RideStatus.Cancelled)
+        if (Status is not (RideStatus.Draft or RideStatus.Published))
         {
             throw new InvalidRideOperationException(
-                "Completed or cancelled rides cannot be edited.");
+                "Only draft or published rides can be edited.");
         }
-
+    
         ValidateText(title, nameof(title), "Ride title is required.");
         ValidateText(description, nameof(description), "Ride description is required.");
-
-        ArgumentNullException.ThrowIfNull(schedule);
+    
+        if (!Enum.IsDefined(type))
+        {
+            throw new InvalidRideDataException("Invalid ride type.");
+        }
+    
+        if (!Enum.IsDefined(capacityPolicy))
+        {
+            throw new InvalidRideDataException("Invalid ride capacity policy.");
+        }
+    
+        ArgumentNullException.ThrowIfNull(startLocation);
         ArgumentNullException.ThrowIfNull(destination);
-
+        ArgumentNullException.ThrowIfNull(schedule);
+    
         Title = title.Trim();
         Description = description.Trim();
-        Schedule = schedule;
+        Type = type;
+        StartLocation = startLocation;
         Destination = destination;
-
+        Schedule = schedule;
+        CapacityPolicy = capacityPolicy;
+    
         Capacity = Capacity.ChangeMaximumCapacity(maximumCapacity);
     }
-
     public void ReserveCapacity()
     {
         if (Status != RideStatus.Published)

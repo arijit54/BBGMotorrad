@@ -1,4 +1,5 @@
 
+using BBG.RideService.Application.Exceptions;
 using BBG.RideService.Domain.Entities;
 using BBG.RideService.Domain.Enums;
 using BBG.RideService.Domain.ValueObjects;
@@ -52,12 +53,15 @@ public sealed class RideConcurrencyTests
             firstRide.UpdateDetails(
                 "Updated Ride Title",
                 firstRide.Description,
-                firstRide.Schedule,
+                firstRide.Type,
+                firstRide.StartLocation,
                 firstRide.Destination,
-                firstRide.MaximumCapacity);
+                firstRide.Schedule,
+                firstRide.MaximumCapacity,
+                firstRide.CapacityPolicy);
 
-            await Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-                () => firstRepository.UpdateAsync(firstRide));
+            await Assert.ThrowsAsync<PersistenceConcurrencyException>(
+    () => firstRepository.UpdateAsync(firstRide));
 
             await using var verifyContext = new RideDbContext(options);
 

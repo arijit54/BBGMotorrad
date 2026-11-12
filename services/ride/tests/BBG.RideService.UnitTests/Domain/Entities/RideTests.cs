@@ -36,6 +36,19 @@ public class RideTests
             RideCapacityPolicy.Waitlist);
     }
 
+    private static void UpdateRideWithCurrentDetails(Ride ride)
+    {
+        ride.UpdateDetails(
+            ride.Title,
+            ride.Description,
+            ride.Type,
+            ride.StartLocation,
+            ride.Destination,
+            ride.Schedule,
+            ride.MaximumCapacity,
+            ride.CapacityPolicy);
+    }
+
     [Fact]
     public void Create_WithValidDetails_ShouldCreateDraftRide()
     {
@@ -120,11 +133,14 @@ public class RideTests
             FixedCurrentTime.AddDays(-1));
 
         ride.UpdateDetails(
-            ride.Title,
-            ride.Description,
-            pastSchedule,
-            ride.Destination,
-            ride.MaximumCapacity);
+    ride.Title,
+    ride.Description,
+    ride.Type,
+    ride.StartLocation,
+    ride.Destination,
+    pastSchedule,
+    ride.MaximumCapacity,
+    ride.CapacityPolicy);
 
         Assert.Throws<InvalidRideOperationException>(
             () => ride.Publish(FixedCurrentTime));
@@ -190,19 +206,28 @@ public class RideTests
             "Puri",
             "Puri, Odisha");
 
+        var updatedStartLocation = RideLocation.Create(
+            "Bhubaneswar",
+            "Bhubaneswar, Odisha");
+
         ride.UpdateDetails(
             "The Coastal Trail",
             "A new BBG MOTORRAD coastal adventure.",
-            updatedSchedule,
+            RideType.WeekendRide,
+            updatedStartLocation,
             updatedDestination,
-            40);
-
+            updatedSchedule,
+            40,
+            RideCapacityPolicy.CloseAtCapacity);
         Assert.Equal("The Coastal Trail", ride.Title);
         Assert.Equal("A new BBG MOTORRAD coastal adventure.", ride.Description);
         Assert.Equal(updatedSchedule, ride.Schedule);
         Assert.Equal(updatedDestination, ride.Destination);
         Assert.Equal(40, ride.MaximumCapacity);
         Assert.Equal(RideStatus.Published, ride.Status);
+        Assert.Equal(RideType.WeekendRide, ride.Type);
+        Assert.Equal(updatedStartLocation, ride.StartLocation);
+        Assert.Equal(RideCapacityPolicy.CloseAtCapacity, ride.CapacityPolicy);
     }
 
     [Fact]
@@ -217,10 +242,12 @@ public class RideTests
         ride.UpdateDetails(
             ride.Title,
             ride.Description,
-            ride.Schedule,
+            ride.Type,
+            ride.StartLocation,
             ride.Destination,
-            10);
-
+            ride.Schedule,
+            10,
+            ride.CapacityPolicy);
         Assert.Equal(10, ride.MaximumCapacity);
         Assert.Equal(RideStatus.Published, ride.Status);
     }
@@ -238,9 +265,12 @@ public class RideTests
             ride.UpdateDetails(
                 "Updated ride",
                 "Updated description",
-                ride.Schedule,
+                ride.Type,
+                ride.StartLocation,
                 ride.Destination,
-                20));
+                ride.Schedule,
+                20,
+                ride.CapacityPolicy));
     }
 
     [Fact]
@@ -252,10 +282,120 @@ public class RideTests
 
         Assert.Throws<InvalidRideOperationException>(() =>
             ride.UpdateDetails(
-                "Updated ride",
-                "Updated description",
-                ride.Schedule,
-                ride.Destination,
-                20));
+            "Updated ride",
+            "Updated description",
+            ride.Type,
+            ride.StartLocation,
+            ride.Destination,
+            ride.Schedule,
+            20,
+            ride.CapacityPolicy));
     }
+
+    [Fact]
+public void UpdateDetails_WhenRideIsDraft_ShouldUpdateRideDetails()
+{
+    var ride = CreateValidRide();
+
+    var updatedDestination = RideLocation.Create(
+        "Puri",
+        "Puri, Odisha");
+
+    ride.UpdateDetails(
+        "Updated adventure",
+        "Updated description",
+        RideType.WeekendRide,
+        ride.StartLocation,
+        updatedDestination,
+        ride.Schedule,
+        25,
+        RideCapacityPolicy.CloseAtCapacity);
+
+    Assert.Equal("Updated adventure", ride.Title);
+    Assert.Equal("Updated description", ride.Description);
+    Assert.Equal(RideType.WeekendRide, ride.Type);
+    Assert.Equal(updatedDestination, ride.Destination);
+    Assert.Equal(25, ride.MaximumCapacity);
+    Assert.Equal(RideCapacityPolicy.CloseAtCapacity, ride.CapacityPolicy);
+    Assert.Equal(RideStatus.Draft, ride.Status);
+}
+
+[Fact]
+public void UpdateDetails_WhenRideIsInProgress_ShouldThrowException()
+{
+    var ride = CreateValidRide();
+    ride.Publish(FixedCurrentTime);
+    ride.Start();
+
+    Assert.Throws<InvalidRideOperationException>(() =>
+        UpdateRideWithCurrentDetails(ride));
+}
+
+[Fact]
+public void UpdateDetails_WhenCapacityIsZero_ShouldThrowException()
+{
+    var ride = CreateValidRide();
+
+    Assert.Throws<InvalidRideDataException>(() =>
+        ride.UpdateDetails(
+            ride.Title,
+            ride.Description,
+            ride.Type,
+            ride.StartLocation,
+            ride.Destination,
+            ride.Schedule,
+            0,
+            ride.CapacityPolicy));
+}
+
+[Fact]
+public void UpdateDetails_WhenTitleIsEmpty_ShouldThrowException()
+{
+    var ride = CreateValidRide();
+
+    Assert.Throws<InvalidRideDataException>(() =>
+        ride.UpdateDetails(
+            " ",
+            ride.Description,
+            ride.Type,
+            ride.StartLocation,
+            ride.Destination,
+            ride.Schedule,
+            ride.MaximumCapacity,
+            ride.CapacityPolicy));
+}
+
+[Fact]
+public void UpdateDetails_WhenRideTypeIsInvalid_ShouldThrowException()
+{
+    var ride = CreateValidRide();
+
+    Assert.Throws<InvalidRideDataException>(() =>
+        ride.UpdateDetails(
+            ride.Title,
+            ride.Description,
+            (RideType)999,
+            ride.StartLocation,
+            ride.Destination,
+            ride.Schedule,
+            ride.MaximumCapacity,
+            ride.CapacityPolicy));
+}
+
+[Fact]
+public void UpdateDetails_WhenCapacityPolicyIsInvalid_ShouldThrowException()
+{
+    var ride = CreateValidRide();
+
+    Assert.Throws<InvalidRideDataException>(() =>
+        ride.UpdateDetails(
+            ride.Title,
+            ride.Description,
+            ride.Type,
+            ride.StartLocation,
+            ride.Destination,
+            ride.Schedule,
+            ride.MaximumCapacity,
+            (RideCapacityPolicy)999));
+}
 }

@@ -2,6 +2,7 @@
 using BBG.RideService.Application.Abstractions.Persistence;
 using BBG.RideService.Application.Features.Rides.GetRideById;
 using BBG.RideService.Domain.Entities;
+using BBG.RideService.Domain.Enums;
 
 namespace BBG.RideService.UnitTests.Features.Rides.GetRideById;
 
@@ -92,5 +93,18 @@ public sealed class GetRideByIdHandlerTests
             Guid rideId,
             CancellationToken cancellationToken = default)
             => Task.FromResult(false);
+
+            public Task<(IReadOnlyList<Ride> Items, int TotalCount)> GetPagedAsync(
+                int pageNumber,
+                int pageSize,
+                RideStatus? status,
+                RideType? type,
+                bool upcomingOnly,
+                DateTimeOffset currentTime,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult<(IReadOnlyList<Ride> Items, int TotalCount)>(
+                    (Array.Empty<Ride>(), 0));
+            }
     }
 }
