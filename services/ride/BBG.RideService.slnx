@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/BBG.RideService.ArchitectureTests/BBG.RideService.ArchitectureTests.csproj" />
+    <Project Path="tests/BBG.RideService.IntegrationTests/BBG.RideService.IntegrationTests.csproj" />
+    <Project Path="tests/BBG.RideService.UnitTests/BBG.RideService.UnitTests.csproj" />
+  </Folder>
+  <Project Path="BBG.RideService.Api/BBG.RideService.Api.csproj" />
+  <Project Path="BBG.RideService.Application/BBG.RideService.Application.csproj" />
+  <Project Path="BBG.RideService.Domain/BBG.RideService.Domain.csproj" />
+  <Project Path="BBG.RideService.Infrastructure/BBG.RideService.Infrastructure.csproj" />
+</Solution>

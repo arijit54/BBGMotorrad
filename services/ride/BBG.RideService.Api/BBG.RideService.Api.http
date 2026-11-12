@@ -1,0 +1,78 @@
+
+@baseUrl = http://localhost:5104
+
+### Create a ride - Valid request
+
+POST {{baseUrl}}/api/rides
+Content-Type: application/json
+
+{
+  "title": "The Eastern Himalayan Trail",
+  "description": "A BBG motorcycle adventure.",
+  "type": "MultiDayRide",
+  "startLocationName": "Kolkata",
+  "startLocationAddress": "Kolkata, West Bengal",
+  "destinationName": "Charkhole",
+  "destinationAddress": "Charkhole, West Bengal",
+  "startDate": "2027-01-15T06:00:00+05:30",
+  "endDate": "2027-01-18T18:00:00+05:30",
+  "maximumCapacity": 20,
+  "capacityPolicy": "Waitlist"
+}
+
+###
+
+### Create a ride - Invalid schedule
+
+POST {{baseUrl}}/api/rides
+Content-Type: application/json
+
+{
+  "title": "Invalid Ride",
+  "description": "Testing invalid schedule.",
+  "type": "DayRide",
+  "startLocationName": "Kolkata",
+  "startLocationAddress": "Kolkata, West Bengal",
+  "destinationName": "Digha",
+  "destinationAddress": "Digha, West Bengal",
+  "startDate": "2027-01-15T10:00:00+05:30",
+  "endDate": "2027-01-14T10:00:00+05:30",
+  "maximumCapacity": 10,
+  "capacityPolicy": "CloseAtCapacity"
+}
+
+
+### Get an existing ride
+
+GET http://localhost:5104/api/rides/95113c8b-ab68-4d26-9165-6cdaad0a83a9
+Accept: application/json
+
+###
+
+### Get a non-existing ride
+
+GET http://localhost:5104/api/rides/00000000-0000-0000-0000-000000000001
+Accept: application/json
+
+### Get all rides
+GET http://localhost:5104/api/rides?pageNumber=1&pageSize=10
+
+###
+
+### Get published rides
+GET http://localhost:5104/api/rides?status=Published
+
+###
+
+### Get multi-day rides
+GET http://localhost:5104/api/rides?type=MultiDayRide
+
+###
+
+### Get upcoming rides
+GET http://localhost:5104/api/rides?upcomingOnly=true
+
+###
+
+### Get invalid page size
+GET http://localhost:5104/api/rides?pageNumber=1&pageSize=500
